@@ -60,7 +60,6 @@ public class SQLiteIndexedFileDao implements IndexedFileDao {
                         file.setCreatedAt(LocalDateTime.now());
                     }
                 }
-                // El trigger FTS se encarga de la inserción en la tabla virtual
                 logger.debug("Archivo indexado insertado: id={}, name={}", file.getId(), file.getFileName());
                 return file;
             }
@@ -194,7 +193,7 @@ public class SQLiteIndexedFileDao implements IndexedFileDao {
      * Método de utilidad reutilizable para ejecutar consultas preparadas estructuradas
      * que devuelven listas de entidades {@link IndexedFile}.
      *
-     * @param sql      La sentencia SQL estructurada a ejecutar.
+     * @param sql La sentencia SQL estructurada a ejecutar.
      * @param folderId El identificador de la carpeta si la consulta lo requiere; puede ser {@code null}.
      * @return Una {@link List} con los registros procesados; estará vacía si no hay coincidencias o si ocurre un error.
      */

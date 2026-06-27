@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 /**
  * Representa un archivo indexado dentro de una carpeta.
- * Contiene metadatos y el texto extraído para búsquedas.
  *
  * @author VJuan955
  * @version 1.0
