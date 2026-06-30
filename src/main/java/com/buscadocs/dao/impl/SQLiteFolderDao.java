@@ -30,7 +30,7 @@ public class SQLiteFolderDao implements FolderDao {
     private static final DateTimeFormatter DT_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private static final String INSERT_SQL = "INSERT INTO folders (path, status, last_indexed, include_hidden) VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_SQL = "UPDATE folders SET path=?, status=?, last_indexed=?, include_hidden=?, updated_at=datetime('now') WHERE id=?";
+    private static final String UPDATE_SQL = "UPDATE folders SET path=?, status=?, last_indexed=?, include_hidden=?, updated_at=strftime('%Y-%m-%dT%H:%M:%S','now') WHERE id=?";
     private static final String DELETE_SQL = "DELETE FROM folders WHERE id=?";
     private static final String SELECT_BY_ID = "SELECT * FROM folders WHERE id=?";
     private static final String SELECT_BY_PATH = "SELECT * FROM folders WHERE path=?";

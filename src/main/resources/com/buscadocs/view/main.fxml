@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="mainContainer" xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.buscadocs.controller.MainController"
+            stylesheets="/com/buscadocs/css/styles.css">
+    <top>
+        <ToolBar>
+            <Button text="Buscar" onAction="#showSearchView" />
+            <Button text="Dashboard" onAction="#showDashboardView" />
+            <Button text="Carpetas" onAction="#showSettingsView" />
+            <Pane HBox.hgrow="ALWAYS" />
+            <Button text="Salir" onAction="#shutdown" />
+        </ToolBar>
+    </top>
+</BorderPane>

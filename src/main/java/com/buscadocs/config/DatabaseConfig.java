@@ -1,5 +1,7 @@
 package com.buscadocs.config;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -30,16 +32,14 @@ public class DatabaseConfig {
     private static final String DB_URL = "jdbc:sqlite:buscadocs.db";
 
     private static DatabaseConfig instance;
-    private Connection connection;
 
     /**
      * Constructor privado. Inicializa la conexión y ejecuta el script de creación de tablas si es necesario.
      */
     private DatabaseConfig() {
-        try {
-            connection = DriverManager.getConnection(DB_URL);
+        try (Connection connection = DriverManager.getConnection(DB_URL)) {
             logger.info("Conexión a SQLite establecida: {}", DB_URL);
-            initializeSchema();
+            initializeSchema(connection);
         } catch (SQLException e) {
             logger.error("Error al conectar con la base de datos SQLite", e);
             throw new RuntimeException("No se pudo inicializar la base de datos", e);
@@ -63,8 +63,8 @@ public class DatabaseConfig {
      *
      * @return conexión JDBC a SQLite.
      */
-    public Connection getConnection() {
-        return connection;
+    public Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(DB_URL);
     }
 
     /**
@@ -74,16 +74,20 @@ public class DatabaseConfig {
      * Se utiliza un enfoque sencillo: cada sentencia termina en ';' y se ejecuta por separado.
      * </p>
      */
-    private void initializeSchema() {
-        try {
-            Path schemaPath = Paths.get(getClass().getClassLoader().getResource("db/schema.sql").toURI());
-            String sql = Files.readString(schemaPath);
+    private void initializeSchema(Connection connection) {
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream("db/schema.sql")) {
+            if (in == null) {
+                throw new IllegalStateException("No se encontró db/schema.sql");
+            }
+            String sql = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             try (Statement stmt = connection.createStatement()) {
-                for (String sentence : sql.split(";")) {
+                for (String sentence : sql.split("@@")) {
                     String trimmed = sentence.trim();
-                    if (!trimmed.isEmpty()) {
-                        stmt.execute(trimmed);
+                    if (trimmed.isEmpty()) {
+                        continue;
                     }
+                    logger.debug("Ejecutando sentencia:\n{}", trimmed);
+                    stmt.execute(trimmed);
                 }
             }
             logger.info("Esquema de base de datos inicializado correctamente.");

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.buscadocs.controller.SearchController">
+    <HBox spacing="10">
+        <TextField fx:id="queryField" promptText="Buscar..." HBox.hgrow="ALWAYS" />
+        <TextField fx:id="extensionFilter" promptText="Extensión (ej. pdf,docx)" prefWidth="200" />
+        <DatePicker fx:id="dateFrom" promptText="Desde" />
+        <DatePicker fx:id="dateTo" promptText="Hasta" />
+        <Button text="Buscar" onAction="#performSearch" />
+    </HBox>
+    <Label fx:id="statusLabel" text="0 resultados" />
+    <ListView fx:id="resultsList" VBox.vgrow="ALWAYS" />
+</VBox>

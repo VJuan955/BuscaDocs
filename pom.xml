@@ -18,7 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Versiones de dependencias -->
-        <javafx.version>27-ea+21</javafx.version>
+        <javafx.version>21.0.11</javafx.version>
         <sqlite.version>3.53.2.0</sqlite.version>
         <guava.version>33.6.0-jre</guava.version>
         <poi.version>5.5.1</poi.version>
