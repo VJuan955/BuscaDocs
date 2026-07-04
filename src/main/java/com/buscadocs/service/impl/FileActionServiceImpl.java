@@ -36,20 +36,26 @@ public class FileActionServiceImpl implements FileActionService {
      * {@inheritDoc}
      */
     @Override
-    public void openFile(String filePath) {
+    public boolean openFile(String filePath) {
         try {
             File file = new File(filePath);
-            if (file.exists() && Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().open(file);
-                FileOpenHistory entry = new FileOpenHistory();
-                entry.setFilePath(filePath);
-                historyDao.insert(entry);
-                logger.info("Archivo abierto: {}", filePath);
-            } else {
-                logger.warn("No se puede abrir el archivo: {}", filePath);
+            if (!file.exists()) {
+                logger.warn("El archivo ya no existe: {}", filePath);
+                return false;
             }
+            if (!Desktop.isDesktopSupported()) {
+                logger.warn("El escritorio no soporta abrir archivos en este sistema");
+                return false;
+            }
+            Desktop.getDesktop().open(file);
+            FileOpenHistory entry = new FileOpenHistory();
+            entry.setFilePath(filePath);
+            historyDao.insert(entry);
+            logger.info("Archivo abierto: {}", filePath);
+            return true;
         } catch (IOException e) {
             logger.error("Error al abrir archivo: {}", filePath, e);
+            return false;
         }
     }
 }

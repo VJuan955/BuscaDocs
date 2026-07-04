@@ -20,8 +20,7 @@ import java.io.IOException;
  * </p>
  *
  * @author VJuan955
- * @version 1.0
- * @since 2026-06-28
+ * @version 2.0
  */
 public class MainController {
 
@@ -31,6 +30,11 @@ public class MainController {
     private BorderPane mainContainer;
 
     private final LogMonitoringService logService = AppContext.getInstance().getLogMonitoringService();
+
+    /**
+     * Referencia al controlador del dashboard actualmente cargado.
+     */
+    private DashboardController activeDashboardController;
 
     /**
      * Inicializa el controlador después de cargar el FXML.
@@ -45,7 +49,6 @@ public class MainController {
 
     /**
      * Carga la vista de búsqueda en el centro del contenedor.
-     * Se invoca desde el menú o botón correspondiente.
      */
     @FXML
     public void showSearchView() {
@@ -74,10 +77,17 @@ public class MainController {
      * @param fxmlFile nombre del archivo FXML (relativo a /com/buscadocs/view/).
      */
     private void loadView(String fxmlFile) {
+        if (activeDashboardController != null) {
+            activeDashboardController.stopUpdater();
+            activeDashboardController = null;
+        }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/buscadocs/view/" + fxmlFile));
             Parent view = loader.load();
             mainContainer.setCenter(view);
+            if (loader.getController() instanceof DashboardController dashboardController) {
+                activeDashboardController = dashboardController;
+            }
             logger.debug("Vista cargada: {}", fxmlFile);
         } catch (IOException e) {
             logger.error("Error al cargar vista: {}", fxmlFile, e);
@@ -89,6 +99,9 @@ public class MainController {
      */
     @FXML
     public void shutdown() {
+        if (activeDashboardController != null) {
+            activeDashboardController.stopUpdater();
+        }
         logService.stop();
         logger.info("Aplicación cerrada");
         javafx.application.Platform.exit();

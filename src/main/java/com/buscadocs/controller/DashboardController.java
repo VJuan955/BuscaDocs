@@ -20,7 +20,6 @@ import javafx.util.Duration;
  *
  * @author VJuan955
  * @version 1.0
- * @since 2026-06-28
  */
 public class DashboardController {
 

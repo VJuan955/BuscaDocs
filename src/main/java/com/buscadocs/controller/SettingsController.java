@@ -5,6 +5,8 @@ import com.buscadocs.model.Folder;
 import com.buscadocs.service.IndexService;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.DirectoryChooser;
+import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +18,6 @@ import org.slf4j.LoggerFactory;
  *
  * @author VJuan955
  * @version 1.0
- * @since 2026-06-28
  */
 public class SettingsController {
 
@@ -42,6 +43,20 @@ public class SettingsController {
         });
     }
 
+    /**
+     * Abre un selector de carpetas del sistema operativo y coloca la ruta
+     * elegida en el campo de texto correspondiente.
+     */
+    @FXML
+    public void browseFolder() {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Selecciona una carpeta para indexar");
+        File selected = chooser.showDialog(foldersList.getScene().getWindow());
+        if (selected != null) {
+            folderPathField.setText(selected.getAbsolutePath());
+        }
+    }
+
     @FXML
     public void addFolder() {
         String path = folderPathField.getText().trim();
@@ -50,30 +65,39 @@ public class SettingsController {
             return;
         }
         boolean includeHidden = includeHiddenCheck.isSelected();
-        Folder folder = indexService.addFolder(path, includeHidden);
-        messageLabel.setText("Carpeta agregada: " + folder.getPath());
-        folderPathField.clear();
-        loadFolders();
+        try {
+            Folder folder = indexService.addFolder(path, includeHidden);
+            messageLabel.setText("Carpeta agregada: " + folder.getPath());
+            folderPathField.clear();
+            loadFolders();
+        } catch (Exception e) {
+            logger.error("Error al agregar carpeta: {}", path, e);
+            messageLabel.setText("No se pudo agregar la carpeta (¿ya existe o la ruta es inválida?)");
+        }
     }
 
     @FXML
     public void reindexFolder() {
         Folder selected = foldersList.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            indexService.reindexFolder(selected.getId());
-            messageLabel.setText("Reindexando: " + selected.getPath());
-            loadFolders();
+        if (selected == null) {
+            messageLabel.setText("Selecciona una carpeta de la lista para reindexar");
+            return;
         }
+        indexService.reindexFolder(selected.getId());
+        messageLabel.setText("Reindexando: " + selected.getPath());
+        loadFolders();
     }
 
     @FXML
     public void removeFolder() {
         Folder selected = foldersList.getSelectionModel().getSelectedItem();
-        if (selected != null) {
-            indexService.removeFolder(selected.getId());
-            messageLabel.setText("Carpeta eliminada: " + selected.getPath());
-            loadFolders();
+        if (selected == null) {
+            messageLabel.setText("Selecciona una carpeta de la lista para eliminar");
+            return;
         }
+        indexService.removeFolder(selected.getId());
+        messageLabel.setText("Carpeta eliminada: " + selected.getPath());
+        loadFolders();
     }
 
     private void loadFolders() {
