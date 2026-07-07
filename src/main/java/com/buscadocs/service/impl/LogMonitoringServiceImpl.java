@@ -46,6 +46,9 @@ public class LogMonitoringServiceImpl implements LogMonitoringService {
     public void start() {
         File logFile = Paths.get("logs", "buscadocs.log").toFile();
         if (!logFile.exists()) {
+            // En una instalación nueva, Logback puede no haber creado el archivo
+            // todavía. Se crea vacío para que Tailer pueda engancharse a él y
+            // seguir sus futuras escrituras, en lugar de abandonar el monitoreo.
             try {
                 File parent = logFile.getParentFile();
                 if (parent != null) {
