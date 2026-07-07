@@ -5,6 +5,8 @@ import com.buscadocs.dao.IndexedFileDao;
 import com.buscadocs.model.Folder;
 import com.buscadocs.model.IndexedFile;
 import com.buscadocs.service.IndexService;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -19,6 +21,8 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementación de {@link IndexService} que indexa archivos en segundo plano.
@@ -50,6 +54,8 @@ public class IndexServiceImpl implements IndexService {
      */
     @Override
     public Folder addFolder(String path, boolean includeHidden) {
+        Preconditions.checkArgument(path != null && !path.isBlank(),
+                "La ruta de la carpeta no puede estar vacía");
         Folder folder = new Folder();
         folder.setPath(path);
         folder.setStatus("PENDING");
@@ -95,6 +101,8 @@ public class IndexServiceImpl implements IndexService {
      * @param folder carpeta que será indexada.
      */
     private void performIndexing(Folder folder) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        AtomicInteger filesIndexed = new AtomicInteger(0);
         try {
             folder.setStatus("INDEXING");
             folderDao.update(folder);
@@ -113,6 +121,7 @@ public class IndexServiceImpl implements IndexService {
                         return FileVisitResult.CONTINUE;
                     }
                     processFile(file, folder.getId(), attrs);
+                    filesIndexed.incrementAndGet();
                     return FileVisitResult.CONTINUE;
                 }
 
@@ -134,7 +143,9 @@ public class IndexServiceImpl implements IndexService {
             folder.setStatus("READY");
             folder.setLastIndexed(LocalDateTime.now());
             folderDao.update(folder);
-            logger.info("Indexación completada para carpeta id={}", folder.getId());
+            stopwatch.stop();
+            logger.info("Indexación completada para carpeta id={}: {} archivos en {} ms",
+                    folder.getId(), filesIndexed.get(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         } catch (IOException e) {
             logger.error("Error durante la indexación de carpeta id={}", folder.getId(), e);
             folder.setStatus("ERROR");

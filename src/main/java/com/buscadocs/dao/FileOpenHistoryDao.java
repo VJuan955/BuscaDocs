@@ -37,4 +37,11 @@ public interface FileOpenHistoryDao {
      * @return Lista con los registros de apertura más recientes.
      */
     List<FileOpenHistory> findRecent(int limit);
+
+    /**
+     * Elimina todos los registros del historial de aperturas de archivos.
+     *
+     * @return {@code true} si la operación se ejecutó correctamente.
+     */
+    boolean deleteAll();
 }

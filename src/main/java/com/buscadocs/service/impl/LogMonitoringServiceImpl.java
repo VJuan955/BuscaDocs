@@ -46,8 +46,17 @@ public class LogMonitoringServiceImpl implements LogMonitoringService {
     public void start() {
         File logFile = Paths.get("logs", "buscadocs.log").toFile();
         if (!logFile.exists()) {
-            logger.warn("Archivo de log no encontrado: {}", logFile.getAbsolutePath());
-            return;
+            try {
+                File parent = logFile.getParentFile();
+                if (parent != null) {
+                    parent.mkdirs();
+                }
+                logFile.createNewFile();
+                logger.info("Archivo de log no existía, se creó vacío: {}", logFile.getAbsolutePath());
+            } catch (java.io.IOException e) {
+                logger.warn("No se pudo crear el archivo de log: {}", logFile.getAbsolutePath(), e);
+                return;
+            }
         }
         tailer = Tailer.create(logFile, new TailerListenerAdapter() {
             @Override

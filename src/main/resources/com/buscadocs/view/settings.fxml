@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.buscadocs.controller.SettingsController">
+    <padding>
+        <Insets top="16" right="16" bottom="16" left="16" />
+    </padding>
+    <HBox spacing="10">
+        <TextField fx:id="folderPathField" promptText="Ruta de carpeta" HBox.hgrow="ALWAYS" editable="false" />
+        <Button text="Examinar..." onAction="#browseFolder" />
+        <CheckBox fx:id="includeHiddenCheck" text="Incluir ocultos" />
+        <Button text="Agregar" onAction="#addFolder" defaultButton="true" />
+    </HBox>
+    <ListView fx:id="foldersList" VBox.vgrow="ALWAYS" />
+    <HBox spacing="10">
+        <Button text="Reindexar" onAction="#reindexFolder" />
+        <Button text="Eliminar" onAction="#removeFolder" />
+    </HBox>
+    <Label fx:id="messageLabel" styleClass="status-label" />
+</VBox>

@@ -24,7 +24,8 @@ public class MetricServiceImpl implements MetricService {
      */
     @Override
     public double getCpuLoad() {
-        return osBean.getCpuLoad() * 100.0;
+        double load = osBean.getCpuLoad();
+        return load < 0 ? 0.0 : load * 100.0;
     }
 
     /**
@@ -32,8 +33,7 @@ public class MetricServiceImpl implements MetricService {
      */
     @Override
     public long getUsedMemoryMB() {
-        Runtime rt = Runtime.getRuntime();
-        return (rt.totalMemory() - rt.freeMemory()) / (1024 * 1024);
+        return (getTotalMemoryMB() - (osBean.getFreeMemorySize() / (1024 * 1024)));
     }
 
     /**
@@ -41,6 +41,6 @@ public class MetricServiceImpl implements MetricService {
      */
     @Override
     public long getTotalMemoryMB() {
-        return Runtime.getRuntime().totalMemory() / (1024 * 1024);
+        return osBean.getTotalMemorySize() / (1024 * 1024);
     }
 }

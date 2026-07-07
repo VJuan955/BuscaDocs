@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.buscadocs.controller.HistoryController">
+    <padding>
+        <Insets top="16" right="16" bottom="16" left="16" />
+    </padding>
+    <Label fx:id="statusLabel" styleClass="status-label" />
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+        <VBox spacing="8" HBox.hgrow="ALWAYS">
+            <Label text="Búsquedas recientes" styleClass="section-title" />
+            <ListView fx:id="searchHistoryList" VBox.vgrow="ALWAYS" />
+            <Button text="Limpiar búsquedas" onAction="#clearSearchHistory" />
+        </VBox>
+        <VBox spacing="8" HBox.hgrow="ALWAYS">
+            <Label text="Archivos abiertos recientemente" styleClass="section-title" />
+            <ListView fx:id="fileHistoryList" VBox.vgrow="ALWAYS" />
+            <Button text="Limpiar aperturas" onAction="#clearFileOpenHistory" />
+        </VBox>
+    </HBox>
+</VBox>

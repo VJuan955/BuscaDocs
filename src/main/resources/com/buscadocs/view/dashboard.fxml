@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.buscadocs.controller.DashboardController">
+    <padding>
+        <Insets top="16" right="16" bottom="16" left="16" />
+    </padding>
+    <Label text="Uso de CPU" />
+    <ProgressBar fx:id="cpuBar" prefWidth="300" />
+    <Label fx:id="cpuLabel" text="CPU: --%" />
+
+    <Label text="Uso de RAM" />
+    <ProgressBar fx:id="ramBar" prefWidth="300" />
+    <Label fx:id="ramLabel" text="RAM: -- MB" />
+
+    <Label text="Consola de Logs (en tiempo real)" />
+    <ListView fx:id="logConsole" VBox.vgrow="ALWAYS" />
+</VBox>

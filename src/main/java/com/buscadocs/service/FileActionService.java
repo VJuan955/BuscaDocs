@@ -14,6 +14,7 @@ public interface FileActionService {
      * operativo y registra la operación en el historial.
      *
      * @param filePath ruta absoluta del archivo que se desea abrir.
+     * @return {@code true} si el archivo se abrió correctamente; {@code false} en caso contrario.
      */
-    void openFile(String filePath);
+    boolean openFile(String filePath);
 }
