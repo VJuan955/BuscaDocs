@@ -33,6 +33,7 @@ public class SQLiteSearchHistoryDao implements SearchHistoryDao {
     private static final String SELECT_ALL = "SELECT * FROM search_history ORDER BY searched_at DESC";
     private static final String SELECT_RECENT = "SELECT * FROM search_history ORDER BY searched_at DESC LIMIT ?";
     private static final String DELETE_OLDER = "DELETE FROM search_history WHERE searched_at < datetime('now', ?)";
+    private static final String DELETE_ALL = "DELETE FROM search_history";
 
     /**
      * {@inheritDoc}
@@ -93,6 +94,22 @@ public class SQLiteSearchHistoryDao implements SearchHistoryDao {
             return true;
         } catch (SQLException e) {
             logger.error("Error al limpiar historial", e);
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteAll() {
+        try (Connection conn = DatabaseConfig.getInstance().getConnection();
+             Statement stmt = conn.createStatement()) {
+            int deleted = stmt.executeUpdate(DELETE_ALL);
+            logger.info("Historial de búsquedas limpiado: {} registros eliminados", deleted);
+            return true;
+        } catch (SQLException e) {
+            logger.error("Error al limpiar historial de búsquedas", e);
             return false;
         }
     }

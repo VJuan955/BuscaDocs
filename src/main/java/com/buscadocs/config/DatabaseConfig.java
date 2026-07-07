@@ -28,8 +28,14 @@ public class DatabaseConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
 
-    /** Ruta del archivo de base de datos */
-    private static final String DB_URL = "jdbc:sqlite:buscadocs.db";
+    /**
+     * Ruta del archivo de base de datos. Puede sobrescribirse mediante la
+     * propiedad de sistema {@code buscadocs.db.url} (por ejemplo, para
+     * apuntar a una base de datos temporal durante las pruebas automatizadas),
+     * evitando así modificar el archivo real de la aplicación.
+     */
+    private static final String DB_URL =
+            System.getProperty("buscadocs.db.url", "jdbc:sqlite:buscadocs.db");
 
     private static DatabaseConfig instance;
 

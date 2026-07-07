@@ -43,4 +43,11 @@ public interface SearchHistoryDao {
      * @return {@code true} si la operación de limpieza se ejecutó con éxito.
      */
     boolean deleteOlderThan(long days);
+
+    /**
+     * Elimina todos los registros del historial de búsquedas.
+     *
+     * @return {@code true} si la operación se ejecutó correctamente.
+     */
+    boolean deleteAll();
 }

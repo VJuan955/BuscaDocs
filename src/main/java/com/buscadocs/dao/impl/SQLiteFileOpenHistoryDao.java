@@ -33,6 +33,7 @@ public class SQLiteFileOpenHistoryDao implements FileOpenHistoryDao {
     private static final String INSERT_SQL = "INSERT INTO file_open_history (file_path) VALUES (?)";
     private static final String SELECT_ALL = "SELECT * FROM file_open_history ORDER BY opened_at DESC";
     private static final String SELECT_RECENT = "SELECT * FROM file_open_history ORDER BY opened_at DESC LIMIT ?";
+    private static final String DELETE_ALL = "DELETE FROM file_open_history";
 
     /**
      * {@inheritDoc}
@@ -72,6 +73,22 @@ public class SQLiteFileOpenHistoryDao implements FileOpenHistoryDao {
     @Override
     public List<FileOpenHistory> findRecent(int limit) {
         return findList(SELECT_RECENT, limit, true);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean deleteAll() {
+        try (Connection conn = DatabaseConfig.getInstance().getConnection();
+             Statement stmt = conn.createStatement()) {
+            int deleted = stmt.executeUpdate(DELETE_ALL);
+            logger.info("Historial de aperturas limpiado: {} registros eliminados", deleted);
+            return true;
+        } catch (SQLException e) {
+            logger.error("Error al limpiar historial de aperturas", e);
+            return false;
+        }
     }
 
     /**

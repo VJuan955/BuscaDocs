@@ -21,7 +21,6 @@ import java.io.IOException;
  *
  * @author VJuan955
  * @version 1.0
- * @since 2026-06-28
  */
 public class MainController {
 
@@ -31,6 +30,13 @@ public class MainController {
     private BorderPane mainContainer;
 
     private final LogMonitoringService logService = AppContext.getInstance().getLogMonitoringService();
+
+    /**
+     * Referencia al controlador del dashboard actualmente cargado, si lo hay,
+     * para poder detener su temporizador al navegar a otra vista y evitar que
+     * siga actualizándose en segundo plano tras ser reemplazado.
+     */
+    private DashboardController activeDashboardController;
 
     /**
      * Inicializa el controlador después de cargar el FXML.
@@ -69,15 +75,30 @@ public class MainController {
     }
 
     /**
+     * Carga la vista de historial (búsquedas y archivos abiertos recientes).
+     */
+    @FXML
+    public void showHistoryView() {
+        loadView("history.fxml");
+    }
+
+    /**
      * Método auxiliar para cargar un archivo FXML en el área central.
      *
      * @param fxmlFile nombre del archivo FXML (relativo a /com/buscadocs/view/).
      */
     private void loadView(String fxmlFile) {
+        if (activeDashboardController != null) {
+            activeDashboardController.stopUpdater();
+            activeDashboardController = null;
+        }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/buscadocs/view/" + fxmlFile));
             Parent view = loader.load();
             mainContainer.setCenter(view);
+            if (loader.getController() instanceof DashboardController dashboardController) {
+                activeDashboardController = dashboardController;
+            }
             logger.debug("Vista cargada: {}", fxmlFile);
         } catch (IOException e) {
             logger.error("Error al cargar vista: {}", fxmlFile, e);
@@ -89,6 +110,9 @@ public class MainController {
      */
     @FXML
     public void shutdown() {
+        if (activeDashboardController != null) {
+            activeDashboardController.stopUpdater();
+        }
         logService.stop();
         logger.info("Aplicación cerrada");
         javafx.application.Platform.exit();

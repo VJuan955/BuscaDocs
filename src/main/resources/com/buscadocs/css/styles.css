@@ -173,6 +173,39 @@
     -fx-border-width: 1 0 0 0;
 }
 
+.result-card {
+    -fx-padding: 10 12;
+}
+
+.section-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+}
+
+.result-card-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+}
+
+.result-card-path {
+    -fx-font-size: 11px;
+    -fx-text-fill: #9aa3b0;
+}
+
+.result-card-snippet {
+    -fx-font-size: 12px;
+    -fx-text-fill: #4b5563;
+    -fx-max-width: 700;
+}
+
+.result-card-meta {
+    -fx-font-size: 11px;
+    -fx-text-fill: #3b6df0;
+    -fx-font-weight: 500;
+}
+
 .tooltip {
     -fx-background-color: #1e293b;
     -fx-text-fill: #ffffff;

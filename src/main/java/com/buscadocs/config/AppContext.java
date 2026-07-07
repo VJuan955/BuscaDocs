@@ -9,11 +9,13 @@ import com.buscadocs.dao.impl.SQLiteFolderDao;
 import com.buscadocs.dao.impl.SQLiteIndexedFileDao;
 import com.buscadocs.dao.impl.SQLiteSearchHistoryDao;
 import com.buscadocs.service.FileActionService;
+import com.buscadocs.service.HistoryService;
 import com.buscadocs.service.IndexService;
 import com.buscadocs.service.LogMonitoringService;
 import com.buscadocs.service.MetricService;
 import com.buscadocs.service.SearchService;
 import com.buscadocs.service.impl.FileActionServiceImpl;
+import com.buscadocs.service.impl.HistoryServiceImpl;
 import com.buscadocs.service.impl.IndexServiceImpl;
 import com.buscadocs.service.impl.LogMonitoringServiceImpl;
 import com.buscadocs.service.impl.MetricServiceImpl;
@@ -30,7 +32,6 @@ import com.buscadocs.service.impl.SearchServiceImpl;
  *
  * @author VJuan955
  * @version 1.0
- * @since 2026-06-28
  */
 public class AppContext {
 
@@ -44,6 +45,7 @@ public class AppContext {
     private final MetricService metricService;
     private final LogMonitoringService logMonitoringService;
     private final FileActionService fileActionService;
+    private final HistoryService historyService;
 
     private static volatile AppContext instance;
 
@@ -63,6 +65,7 @@ public class AppContext {
         this.metricService = new MetricServiceImpl();
         this.logMonitoringService = new LogMonitoringServiceImpl();
         this.fileActionService = new FileActionServiceImpl(fileOpenHistoryDao);
+        this.historyService = new HistoryServiceImpl(searchHistoryDao, fileOpenHistoryDao);
     }
 
     /**
@@ -125,5 +128,10 @@ public class AppContext {
     /** @return instancia única de {@link FileActionService}. */
     public FileActionService getFileActionService() {
         return fileActionService;
+    }
+
+    /** @return instancia única de {@link HistoryService}. */
+    public HistoryService getHistoryService() {
+        return historyService;
     }
 }

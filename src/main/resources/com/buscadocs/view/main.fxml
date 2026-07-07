@@ -12,6 +12,7 @@
             <Button text="Buscar" onAction="#showSearchView" />
             <Button text="Dashboard" onAction="#showDashboardView" />
             <Button text="Carpetas" onAction="#showSettingsView" />
+            <Button text="Historial" onAction="#showHistoryView" />
             <Pane HBox.hgrow="ALWAYS" />
             <Button text="Salir" onAction="#shutdown" />
         </ToolBar>

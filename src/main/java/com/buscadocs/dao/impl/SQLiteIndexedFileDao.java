@@ -172,8 +172,10 @@ public class SQLiteIndexedFileDao implements IndexedFileDao {
     @Override
     public List<IndexedFile> searchFullText(String query, int limit) {
         List<IndexedFile> results = new ArrayList<>();
-        // Formatear consulta para FTS5: cada término se puede concatenar con AND/OR, aquí usamos término simple
-        String ftsQuery = query.trim().replace(" ", " AND ");
+        String ftsQuery = buildFtsQuery(query);
+        if (ftsQuery.isEmpty()) {
+            return results;
+        }
         try (Connection conn = DatabaseConfig.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(SEARCH_FTS)) {
             pstmt.setString(1, ftsQuery);
@@ -187,6 +189,31 @@ public class SQLiteIndexedFileDao implements IndexedFileDao {
             logger.error("Error en búsqueda full-text: {}", query, e);
         }
         return results;
+    }
+
+    /**
+     * Construye una expresión de consulta segura para la tabla virtual FTS5
+     * a partir del texto ingresado por el usuario.
+     * <p>
+     * Cada término se envuelve entre comillas dobles para que FTS5 lo trate
+     * como una cadena literal (evitando que caracteres especiales de su
+     * sintaxis de consulta, como {@code -}, {@code *}, {@code :} o comillas,
+     * produzcan errores de sintaxis) y los términos se combinan con AND.
+     *
+     * @param query texto de búsqueda ingresado por el usuario.
+     * @return expresión lista para usarse con {@code MATCH}, o cadena vacía si no hay términos válidos.
+     */
+    private String buildFtsQuery(String query) {
+        if (query == null) return "";
+        String[] tokens = query.trim().split("\\s+");
+        StringBuilder sb = new StringBuilder();
+        for (String token : tokens) {
+            if (token.isBlank()) continue;
+            String escaped = token.replace("\"", "\"\"");
+            if (sb.length() > 0) sb.append(" AND ");
+            sb.append('"').append(escaped).append('"');
+        }
+        return sb.toString();
     }
 
     /**
