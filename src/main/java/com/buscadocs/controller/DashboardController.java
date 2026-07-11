@@ -10,6 +10,8 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Label;
 import javafx.util.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Controlador del dashboard de métricas de hardware y consola de logs.
@@ -22,6 +24,8 @@ import javafx.util.Duration;
  * @version 1.0
  */
 public class DashboardController {
+
+    private static final Logger logger = LoggerFactory.getLogger(DashboardController.class);
 
     @FXML private ProgressBar cpuBar;
     @FXML private Label cpuLabel;
@@ -45,21 +49,40 @@ public class DashboardController {
     }
 
     private void refresh() {
-        double cpu = metricService.getCpuLoad();
-        cpuBar.setProgress(cpu / 100.0);
-        cpuLabel.setText(String.format("CPU: %.1f%%", cpu));
+        try {
+            double cpu = metricService.getCpuLoad();
+            cpuBar.setProgress(clampProgress(cpu / 100.0));
+            cpuLabel.setText(String.format("CPU: %.1f%%", cpu));
 
-        long used = metricService.getUsedMemoryMB();
-        long total = metricService.getTotalMemoryMB();
-        ramBar.setProgress((double) used / total);
-        ramLabel.setText(String.format("RAM: %d / %d MB", used, total));
+            long used = metricService.getUsedMemoryMB();
+            long total = metricService.getTotalMemoryMB();
+            double ramProgress = total > 0 ? clampProgress((double) used / total) : 0.0;
+            ramBar.setProgress(ramProgress);
+            ramLabel.setText(String.format("RAM: %d / %d MB", used, total));
 
-        java.util.List<String> recentLogs = logService.getRecentLines(20);
-        logConsole.getItems().setAll(recentLogs);
+            java.util.List<String> recentLogs = logService.getRecentLines(20);
+            logConsole.getItems().setAll(recentLogs);
 
-        if (!recentLogs.isEmpty()) {
-            logConsole.scrollTo(recentLogs.size() - 1);
+            if (!recentLogs.isEmpty()) {
+                logConsole.scrollTo(recentLogs.size() - 1);
+            }
+        } catch (Exception e) {
+            logger.warn("Error al actualizar el dashboard, se reintentará en el próximo ciclo", e);
         }
+    }
+
+    /**
+     * Acota un valor de progreso al rango [0, 1] que espera {@link ProgressBar},
+     * evitando además valores {@code NaN} o infinitos.
+     *
+     * @param value valor de progreso calculado, potencialmente fuera de rango.
+     * @return el valor acotado entre 0.0 y 1.0.
+     */
+    private double clampProgress(double value) {
+        if (Double.isNaN(value) || Double.isInfinite(value)) {
+            return 0.0;
+        }
+        return Math.max(0.0, Math.min(1.0, value));
     }
 
     /**

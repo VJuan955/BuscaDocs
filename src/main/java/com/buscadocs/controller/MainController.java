@@ -88,9 +88,6 @@ public class MainController {
      * @param fxmlFile nombre del archivo FXML (relativo a /com/buscadocs/view/).
      */
     private void loadView(String fxmlFile) {
-        // Si veníamos del dashboard, detenemos su temporizador antes de
-        // reemplazarlo: de lo contrario seguiría actualizándose en segundo
-        // plano indefinidamente, aunque ya no sea visible.
         if (activeDashboardController != null) {
             activeDashboardController.stopUpdater();
             activeDashboardController = null;

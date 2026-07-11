@@ -2,7 +2,7 @@ package com.buscadocs;
 
 /**
  * Punto de entrada alternativo para las distribuciones empaquetadas (JAR
- * fat e instaladores nativos generados con {@code jpackage}).
+ * "fat" e instaladores nativos generados con {@code jpackage}).
  * <p>
  * Cuando una clase que extiende {@link javafx.application.Application} es
  * declarada directamente como {@code Main-Class} de un JAR con todas las
