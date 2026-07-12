@@ -122,6 +122,7 @@ class SearchServiceImplTest {
         @Override public Optional<IndexedFile> findById(int id) { throw new UnsupportedOperationException(); }
         @Override public List<IndexedFile> findAll() { throw new UnsupportedOperationException(); }
         @Override public List<IndexedFile> findByFolder(int folderId) { throw new UnsupportedOperationException(); }
+        @Override public List<String> suggestFileNames(String prefix, int limit) { throw new UnsupportedOperationException(); }
     }
 
     /** Fake en memoria de {@link SearchHistoryDao} que registra las inserciones para poder verificarlas. */
@@ -137,6 +138,5 @@ class SearchServiceImplTest {
         @Override public List<SearchHistory> findAll() { throw new UnsupportedOperationException(); }
         @Override public List<SearchHistory> findRecent(int limit) { throw new UnsupportedOperationException(); }
         @Override public boolean deleteOlderThan(long days) { throw new UnsupportedOperationException(); }
-        @Override public boolean deleteAll() { throw new UnsupportedOperationException(); }
     }
 }

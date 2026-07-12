@@ -8,15 +8,27 @@ import com.buscadocs.service.IndexService;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.hssf.extractor.ExcelExtractor;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
+import org.apache.poi.sl.extractor.SlideShowExtractor;
+import org.apache.poi.xslf.usermodel.XMLSlideShow;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xssf.extractor.XSSFExcelExtractor;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.rtf.RTFEditorKit;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
@@ -182,6 +194,16 @@ public class IndexServiceImpl implements IndexService {
                 fullContent = extractDocx(filePath);
             } else if ("xlsx".equals(extension)) {
                 fullContent = extractXlsx(filePath);
+            } else if ("pptx".equals(extension)) {
+                fullContent = extractPptx(filePath);
+            } else if ("pdf".equals(extension)) {
+                fullContent = extractPdf(filePath);
+            } else if ("doc".equals(extension)) {
+                fullContent = extractDoc(filePath);
+            } else if ("xls".equals(extension)) {
+                fullContent = extractXls(filePath);
+            } else if ("rtf".equals(extension)) {
+                fullContent = extractRtf(filePath);
             }
 
             if (fullContent != null) {
@@ -213,7 +235,8 @@ public class IndexServiceImpl implements IndexService {
      */
     private boolean isTextExtension(String ext) {
         return switch (ext) {
-            case "txt", "log", "csv", "xml", "json", "html", "md", "java", "py", "properties" -> true;
+            case "txt", "log", "csv", "xml", "json", "html", "htm", "md", "java", "py",
+                    "properties", "yaml", "yml", "ini", "sql", "js", "ts", "css", "bat", "sh" -> true;
             default -> false;
         };
     }
@@ -245,6 +268,91 @@ public class IndexServiceImpl implements IndexService {
              XSSFWorkbook workbook = new XSSFWorkbook(is);
              XSSFExcelExtractor extractor = new XSSFExcelExtractor(workbook)) {
             return extractor.getText();
+        }
+    }
+
+    /**
+     * Extrae el texto de todas las diapositivas de una presentación de
+     * Microsoft PowerPoint (.pptx), incluyendo notas del orador.
+     *
+     * @param path ruta del archivo.
+     * @return el texto extraído de la presentación.
+     * @throws IOException si ocurre un error durante la lectura del archivo.
+     */
+    private String extractPptx(Path path) throws IOException {
+        try (InputStream is = Files.newInputStream(path);
+             XMLSlideShow slideShow = new XMLSlideShow(is);
+             SlideShowExtractor<?, ?> extractor = new SlideShowExtractor<>(slideShow)) {
+            return extractor.getText();
+        }
+    }
+
+    /**
+     * Extrae el texto de un documento PDF, concatenando todas sus páginas.
+     *
+     * @param path ruta del archivo.
+     * @return el texto extraído del PDF.
+     * @throws IOException si ocurre un error durante la lectura o el documento está protegido.
+     */
+    private String extractPdf(Path path) throws IOException {
+        try (PDDocument document = Loader.loadPDF(path.toFile())) {
+            if (document.isEncrypted()) {
+                logger.warn("PDF protegido, se omite su contenido: {}", path);
+                return null;
+            }
+            return new PDFTextStripper().getText(document);
+        }
+    }
+
+    /**
+     * Extrae el contenido textual de un documento Word en el formato binario
+     * antiguo (.doc, Word 97-2003).
+     *
+     * @param path ruta del archivo.
+     * @return el texto extraído del documento.
+     * @throws IOException si ocurre un error durante la lectura del archivo.
+     */
+    private String extractDoc(Path path) throws IOException {
+        try (InputStream is = Files.newInputStream(path);
+             HWPFDocument doc = new HWPFDocument(is);
+             WordExtractor extractor = new WordExtractor(doc)) {
+            return extractor.getText();
+        }
+    }
+
+    /**
+     * Extrae el contenido textual de un libro de Excel en el formato binario
+     * antiguo (.xls, Excel 97-2003).
+     *
+     * @param path ruta del archivo.
+     * @return el texto extraído del libro.
+     * @throws IOException si ocurre un error durante la lectura del archivo.
+     */
+    private String extractXls(Path path) throws IOException {
+        try (InputStream is = Files.newInputStream(path);
+             HSSFWorkbook workbook = new HSSFWorkbook(is);
+             ExcelExtractor extractor = new ExcelExtractor(workbook)) {
+            return extractor.getText();
+        }
+    }
+
+    /**
+     * Extrae el texto plano de un documento en formato RTF, usando el editor
+     * RTF incluido en el módulo {@code java.desktop} del JDK (sin necesidad
+     * de una librería externa adicional).
+     *
+     * @param path ruta del archivo.
+     * @return el texto extraído del documento.
+     * @throws IOException si ocurre un error durante la lectura o el archivo no es un RTF válido.
+     */
+    private String extractRtf(Path path) throws IOException {
+        try (InputStream is = Files.newInputStream(path)) {
+            RTFEditorKit rtfEditorKit = new RTFEditorKit();
+            Document document = rtfEditorKit.createDefaultDocument();
+            rtfEditorKit.read(is, document, 0);
+            return document.getText(0, document.getLength());
+        } catch (BadLocationException e) {
+            throw new IOException("Error al extraer texto de archivo RTF: " + path, e);
         }
     }
 }

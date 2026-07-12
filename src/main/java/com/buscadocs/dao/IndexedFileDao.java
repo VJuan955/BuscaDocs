@@ -78,4 +78,14 @@ public interface IndexedFileDao {
      * @return Lista de archivos que coinciden, ordenados por relevancia.
      */
     List<IndexedFile> searchFullText(String query, int limit);
+
+    /**
+     * Sugiere nombres de archivo indexados que comienzan con el prefijo dado,
+     * para alimentar el autocompletado del campo de búsqueda.
+     *
+     * @param prefix texto parcial escrito por el usuario.
+     * @param limit número máximo de sugerencias a devolver.
+     * @return lista de nombres de archivo distintos que coinciden, ordenados alfabéticamente.
+     */
+    List<String> suggestFileNames(String prefix, int limit);
 }

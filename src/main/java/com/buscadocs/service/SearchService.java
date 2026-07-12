@@ -28,4 +28,15 @@ public interface SearchService {
      */
     List<SearchResult> search(String query, List<String> extensions,
                                      LocalDateTime dateFrom, LocalDateTime dateTo, int maxResults);
+
+    /**
+     * Sugiere nombres de archivo indexados que comienzan con el texto parcial
+     * dado, para alimentar el autocompletado del campo de búsqueda mientras
+     * el usuario escribe.
+     *
+     * @param prefix texto parcial escrito por el usuario.
+     * @param limit número máximo de sugerencias a devolver.
+     * @return lista de nombres de archivo sugeridos.
+     */
+    List<String> suggestFileNames(String prefix, int limit);
 }

@@ -120,19 +120,10 @@
 
 .progress-bar {
     -fx-accent: #3b6df0;
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
 }
 
 .progress-bar .track {
     -fx-background-color: #e4e8ee;
-    -fx-background-radius: 8;
-}
-
-.progress-bar .bar {
-    -fx-background-color: #3b6df0;
-    -fx-background-radius: 8;
-    -fx-padding: 1.5px;
 }
 
 .label {

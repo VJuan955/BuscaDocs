@@ -17,9 +17,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Pruebas unitarias para {@link SQLiteIndexedFileDao}, con énfasis en la
- * búsqueda de texto completo (FTS5) tras corregir la construcción de la
- * consulta para que escape caracteres especiales en lugar de concatenarlos
- * directamente en la expresión MATCH.
+ * búsqueda de texto completo (FTS5): tanto la sanitización de caracteres
+ * especiales como la búsqueda por prefijo (que permite encontrar "informe"
+ * al escribir solo "inform"), y las sugerencias de autocompletado de
+ * nombres de archivo.
  *
  * @author VJuan955
  * @version 1.0
@@ -111,5 +112,59 @@ class SQLiteIndexedFileDaoTest extends AbstractDatabaseTest {
 
         assertEquals(2, eliminados);
         assertTrue(indexedFileDao.findByFolder(folderId).isEmpty());
+    }
+
+    /**
+     * Regresión: antes de este cambio, FTS5 exigía una coincidencia exacta
+     * de token, por lo que buscar "inform" no encontraba archivos que
+     * contenían "informe". Ahora la búsqueda es por prefijo.
+     */
+    @Test
+    void searchFullTextEncuentraPorPrefijoDePalabra() {
+        indexar("reporte.txt", "Este documento contiene información confidencial");
+
+        List<IndexedFile> resultados = indexedFileDao.searchFullText("inform", 10);
+
+        assertEquals(1, resultados.size());
+        assertEquals("reporte.txt", resultados.get(0).getFileName());
+    }
+
+    @Test
+    void suggestFileNamesEncuentraPorPrefijoDelNombre() {
+        indexar("informe_anual.txt", "contenido");
+        indexar("informe_mensual.txt", "contenido");
+        indexar("presupuesto.txt", "contenido");
+
+        List<String> sugerencias = indexedFileDao.suggestFileNames("info", 10);
+
+        assertEquals(2, sugerencias.size());
+        assertTrue(sugerencias.contains("informe_anual.txt"));
+        assertTrue(sugerencias.contains("informe_mensual.txt"));
+    }
+
+    @Test
+    void suggestFileNamesRespetaElLimite() {
+        indexar("archivo1.txt", "contenido");
+        indexar("archivo2.txt", "contenido");
+        indexar("archivo3.txt", "contenido");
+
+        List<String> sugerencias = indexedFileDao.suggestFileNames("archivo", 2);
+
+        assertEquals(2, sugerencias.size());
+    }
+
+    @Test
+    void suggestFileNamesDevuelveListaVaciaParaPrefijoVacio() {
+        indexar("archivo.txt", "contenido");
+
+        assertTrue(indexedFileDao.suggestFileNames("", 10).isEmpty());
+        assertTrue(indexedFileDao.suggestFileNames(null, 10).isEmpty());
+    }
+
+    @Test
+    void suggestFileNamesNoLanzaExcepcionConCaracteresEspeciales() {
+        indexar("archivo.txt", "contenido");
+
+        assertDoesNotThrow(() -> indexedFileDao.suggestFileNames("\"raro*: -", 10));
     }
 }

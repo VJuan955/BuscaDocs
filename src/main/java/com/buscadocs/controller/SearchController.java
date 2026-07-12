@@ -5,11 +5,14 @@ import com.buscadocs.model.SearchResult;
 import com.buscadocs.service.FileActionService;
 import com.buscadocs.service.SearchService;
 import com.google.common.base.Splitter;
+import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.geometry.Side;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +54,19 @@ public class SearchController {
      * repetidas o finales), a diferencia de un {@code String.split} manual.
      */
     private static final Splitter EXTENSION_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
+
+    /** Cantidad mínima de caracteres antes de disparar una consulta de sugerencias. */
+    private static final int MIN_CHARS_FOR_SUGGESTIONS = 2;
+
+    /** Menú desplegable con las sugerencias de autocompletado bajo el campo de búsqueda. */
+    private final ContextMenu suggestionsMenu = new ContextMenu();
+
+    /**
+     * Retrasa la consulta de sugerencias hasta que el usuario deja de escribir
+     * durante 250 ms ("debounce"), para no golpear la base de datos en cada
+     * pulsación de tecla.
+     */
+    private final PauseTransition suggestionsDebounce = new PauseTransition(Duration.millis(250));
 
     /**
      * Configura la lista de resultados con doble clic para abrir archivos.
@@ -107,6 +123,66 @@ public class SearchController {
                 }
             }
         });
+
+        suggestionsDebounce.setOnFinished(e -> updateSuggestions());
+        queryField.textProperty().addListener((obs, oldText, newText) -> {
+            suggestionsDebounce.stop();
+            if (newText != null && newText.trim().length() >= MIN_CHARS_FOR_SUGGESTIONS) {
+                suggestionsDebounce.playFromStart();
+            } else {
+                suggestionsMenu.hide();
+            }
+        });
+        // Si el foco sale del campo de búsqueda, ocultamos las sugerencias.
+        queryField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            if (!isFocused) {
+                suggestionsMenu.hide();
+            }
+        });
+    }
+
+    /**
+     * Consulta sugerencias de nombres de archivo para el texto actual del
+     * campo de búsqueda y las muestra en un menú desplegable bajo el campo.
+     * Seleccionar una sugerencia completa el campo con ese nombre y dispara
+     * la búsqueda automáticamente.
+     */
+    private void updateSuggestions() {
+        String prefix = queryField.getText() != null ? queryField.getText().trim() : "";
+        if (prefix.length() < MIN_CHARS_FOR_SUGGESTIONS) {
+            suggestionsMenu.hide();
+            return;
+        }
+
+        List<String> suggestions;
+        try {
+            suggestions = searchService.suggestFileNames(prefix, 8);
+        } catch (Exception e) {
+            logger.warn("Error al obtener sugerencias para: {}", prefix, e);
+            suggestionsMenu.hide();
+            return;
+        }
+
+        if (suggestions.isEmpty()) {
+            suggestionsMenu.hide();
+            return;
+        }
+
+        suggestionsMenu.getItems().clear();
+        for (String suggestion : suggestions) {
+            MenuItem item = new MenuItem(suggestion);
+            item.setOnAction(e -> {
+                queryField.setText(suggestion);
+                queryField.positionCaret(suggestion.length());
+                suggestionsMenu.hide();
+                performSearch();
+            });
+            suggestionsMenu.getItems().add(item);
+        }
+
+        if (!suggestionsMenu.isShowing()) {
+            suggestionsMenu.show(queryField, Side.BOTTOM, 0, 0);
+        }
     }
 
     /**
@@ -129,6 +205,7 @@ public class SearchController {
      */
     @FXML
     public void performSearch() {
+        suggestionsMenu.hide();
         String query = queryField.getText().trim();
         if (query.isEmpty()) {
             statusLabel.setText("Ingrese un texto de búsqueda");

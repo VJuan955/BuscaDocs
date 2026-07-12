@@ -73,6 +73,14 @@ public class SearchServiceImpl implements SearchService {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> suggestFileNames(String prefix, int limit) {
+        return indexedFileDao.suggestFileNames(prefix, limit);
+    }
+
+    /**
      * Convierte un archivo indexado en un objeto de resultado de búsqueda.
      *
      * @param file archivo indexado que se convertirá.

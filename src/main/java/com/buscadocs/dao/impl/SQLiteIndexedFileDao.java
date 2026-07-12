@@ -35,6 +35,10 @@ public class SQLiteIndexedFileDao implements IndexedFileDao {
     private static final String DELETE_BY_FOLDER = "DELETE FROM indexed_files WHERE folder_id=?";
 
     private static final String SEARCH_FTS = "SELECT f.* FROM indexed_files f JOIN files_fts ft ON f.id = ft.rowid WHERE files_fts MATCH ? ORDER BY rank LIMIT ?";
+    private static final String SUGGEST_NAMES =
+            "SELECT DISTINCT f.file_name FROM indexed_files f " +
+            "JOIN files_fts ft ON f.id = ft.rowid " +
+            "WHERE files_fts MATCH ? ORDER BY f.file_name LIMIT ?";
 
     /**
      * {@inheritDoc}
@@ -198,7 +202,10 @@ public class SQLiteIndexedFileDao implements IndexedFileDao {
      * Cada término se envuelve entre comillas dobles para que FTS5 lo trate
      * como una cadena literal (evitando que caracteres especiales de su
      * sintaxis de consulta, como {@code -}, {@code *}, {@code :} o comillas,
-     * produzcan errores de sintaxis) y los términos se combinan con AND.
+     * produzcan errores de sintaxis), y se le añade {@code *} para realizar
+     * una <b>búsqueda por prefijo</b>: así "inform" encuentra "informe" o
+     * "información" sin necesidad de escribir la palabra completa, en vez
+     * de requerir una coincidencia exacta de token.
      *
      * @param query texto de búsqueda ingresado por el usuario.
      * @return expresión lista para usarse con {@code MATCH}, o cadena vacía si no hay términos válidos.
@@ -211,9 +218,42 @@ public class SQLiteIndexedFileDao implements IndexedFileDao {
             if (token.isBlank()) continue;
             String escaped = token.replace("\"", "\"\"");
             if (sb.length() > 0) sb.append(" AND ");
-            sb.append('"').append(escaped).append('"');
+            sb.append('"').append(escaped).append("\"*");
         }
         return sb.toString();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * La búsqueda se restringe a la columna {@code file_name} de la tabla
+     * virtual FTS5 (filtro de columna, sintaxis {@code file_name:"prefijo"*}),
+     * y usa siempre coincidencia por prefijo: es la consulta que alimenta el
+     * autocompletado del campo de búsqueda mientras el usuario escribe.
+     * </p>
+     */
+    @Override
+    public List<String> suggestFileNames(String prefix, int limit) {
+        List<String> results = new ArrayList<>();
+        if (prefix == null || prefix.isBlank()) {
+            return results;
+        }
+        String escaped = prefix.trim().replace("\"", "\"\"");
+        String ftsQuery = "file_name : \"" + escaped + "\"*";
+
+        try (Connection conn = DatabaseConfig.getInstance().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(SUGGEST_NAMES)) {
+            pstmt.setString(1, ftsQuery);
+            pstmt.setInt(2, limit);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    results.add(rs.getString("file_name"));
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error al sugerir nombres de archivo para prefijo: {}", prefix, e);
+        }
+        return results;
     }
 
     /**
