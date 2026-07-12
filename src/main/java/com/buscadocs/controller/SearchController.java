@@ -8,10 +8,12 @@ import com.google.common.base.Splitter;
 import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Side;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.stage.Popup;
 import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,6 +45,9 @@ public class SearchController {
     @FXML private DatePicker dateTo;
     @FXML private ListView<SearchResult> resultsList;
     @FXML private Label statusLabel;
+    @FXML private Label filtersSummaryLabel;
+    @FXML private Button filterToggleBtn;
+    @FXML private Popup filtersPopup;
 
     private final SearchService searchService = AppContext.getInstance().getSearchService();
     private final FileActionService fileActionService = AppContext.getInstance().getFileActionService();
@@ -133,12 +139,72 @@ public class SearchController {
                 suggestionsMenu.hide();
             }
         });
-        // Si el foco sale del campo de búsqueda, ocultamos las sugerencias.
         queryField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
             if (!isFocused) {
                 suggestionsMenu.hide();
             }
         });
+
+        updateFilterSummary();
+    }
+
+    /**
+     * Muestra u oculta la ventana emergente de filtros (extensión y rango de
+     * fechas), anclada justo debajo del botón "Filtros".
+     */
+    @FXML
+    public void toggleFilters() {
+        if (filtersPopup.isShowing()) {
+            filtersPopup.hide();
+            return;
+        }
+        Bounds bounds = filterToggleBtn.localToScreen(filterToggleBtn.getBoundsInLocal());
+        filtersPopup.show(filterToggleBtn, bounds.getMinX(), bounds.getMaxY() + 6);
+    }
+
+    /**
+     * Aplica los filtros seleccionados en la ventana emergente: la cierra,
+     * actualiza el resumen visible junto al contador de resultados y
+     * relanza la búsqueda con los nuevos criterios.
+     */
+    @FXML
+    public void applyFilters() {
+        filtersPopup.hide();
+        updateFilterSummary();
+        performSearch();
+    }
+
+    /**
+     * Limpia los filtros de extensión y fecha, sin cerrar la ventana
+     * emergente (para que el usuario pueda seguir ajustando antes de aplicar).
+     */
+    @FXML
+    public void clearFilters() {
+        extensionFilter.clear();
+        dateFrom.setValue(null);
+        dateTo.setValue(null);
+        updateFilterSummary();
+    }
+
+    /**
+     * Actualiza el texto de resumen de filtros activos junto al contador de
+     * resultados, y resalta el botón "Filtros" cuando hay al menos uno activo.
+     */
+    private void updateFilterSummary() {
+        List<String> parts = new ArrayList<>();
+        String ext = extensionFilter.getText();
+        if (ext != null && !ext.isBlank()) {
+            parts.add(ext.trim().toUpperCase());
+        }
+        if (dateFrom.getValue() != null || dateTo.getValue() != null) {
+            parts.add("rango de fechas");
+        }
+        boolean active = !parts.isEmpty();
+        filtersSummaryLabel.setText(active ? "Filtros: " + String.join(" · ", parts) : "");
+        filterToggleBtn.getStyleClass().remove("filter-toggle-active");
+        if (active) {
+            filterToggleBtn.getStyleClass().add("filter-toggle-active");
+        }
     }
 
     /**

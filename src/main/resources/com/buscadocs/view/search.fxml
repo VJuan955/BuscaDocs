@@ -3,20 +3,70 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.Group?>
+<?import javafx.stage.Popup?>
 
-<VBox spacing="10" xmlns="http://javafx.com/javafx/21"
+<VBox spacing="0" xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.buscadocs.controller.SearchController">
+
+    <fx:define>
+        <Popup fx:id="filtersPopup" autoHide="true" hideOnEscape="true">
+            <content>
+                <VBox styleClass="filters-popup" spacing="10" prefWidth="300">
+                    <padding>
+                        <Insets top="16" right="16" bottom="16" left="16" />
+                    </padding>
+                    <Label text="Extensión de archivo" styleClass="filter-label" />
+                    <TextField fx:id="extensionFilter" promptText="pdf, docx, xlsx..." />
+                    <Label text="Rango de fechas" styleClass="filter-label" />
+                    <HBox spacing="8">
+                        <DatePicker fx:id="dateFrom" promptText="Desde" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                        <DatePicker fx:id="dateTo" promptText="Hasta" HBox.hgrow="ALWAYS" maxWidth="Infinity" />
+                    </HBox>
+                    <Separator />
+                    <HBox spacing="8" alignment="CENTER_RIGHT">
+                        <Button text="Limpiar" styleClass="filter-clear-btn" onAction="#clearFilters" />
+                        <Button text="Aplicar" styleClass="filter-apply-btn" onAction="#applyFilters" defaultButton="true" />
+                    </HBox>
+                </VBox>
+            </content>
+        </Popup>
+    </fx:define>
+
     <padding>
-        <Insets top="16" right="16" bottom="16" left="16" />
+        <Insets top="28" right="40" bottom="20" left="40" />
     </padding>
-    <HBox spacing="10">
-        <TextField fx:id="queryField" promptText="Buscar..." HBox.hgrow="ALWAYS" onAction="#performSearch" />
-        <TextField fx:id="extensionFilter" promptText="Extensión (ej. pdf,docx)" prefWidth="200" />
-        <DatePicker fx:id="dateFrom" promptText="Desde" />
-        <DatePicker fx:id="dateTo" promptText="Hasta" />
-        <Button text="Buscar" onAction="#performSearch" defaultButton="true" />
+
+    <VBox spacing="4">
+        <Label text="Motor de Búsqueda" styleClass="page-title" />
+        <Label text="Busca archivos en tus carpetas indexadas por nombre o contenido" styleClass="page-subtitle" />
+    </VBox>
+
+    <StackPane alignment="CENTER">
+        <padding>
+            <Insets top="22" bottom="4" />
+        </padding>
+        <HBox styleClass="search-bar" spacing="10" alignment="CENTER_LEFT" maxWidth="760">
+            <Group>
+                <Circle radius="6" centerX="7" centerY="7" styleClass="search-icon" />
+                <Line startX="11.2" startY="11.2" endX="15" endY="15" styleClass="search-icon" />
+            </Group>
+            <TextField fx:id="queryField" promptText="Buscar archivos por nombre o contenido..."
+                       HBox.hgrow="ALWAYS" onAction="#performSearch" styleClass="search-input" />
+            <Button fx:id="filterToggleBtn" text="Filtros" styleClass="filter-toggle-btn" onAction="#toggleFilters" />
+            <Button text="Buscar" onAction="#performSearch" defaultButton="true" styleClass="search-submit-btn" />
+        </HBox>
+    </StackPane>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <padding>
+            <Insets top="4" bottom="14" />
+        </padding>
+        <Label fx:id="statusLabel" text="0 resultados" styleClass="status-label" />
+        <Label fx:id="filtersSummaryLabel" styleClass="filters-summary-label" />
     </HBox>
-    <Label fx:id="statusLabel" text="0 resultados" styleClass="status-label" />
+
     <ListView fx:id="resultsList" VBox.vgrow="ALWAYS" />
 </VBox>

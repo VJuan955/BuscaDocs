@@ -138,5 +138,6 @@ class SearchServiceImplTest {
         @Override public List<SearchHistory> findAll() { throw new UnsupportedOperationException(); }
         @Override public List<SearchHistory> findRecent(int limit) { throw new UnsupportedOperationException(); }
         @Override public boolean deleteOlderThan(long days) { throw new UnsupportedOperationException(); }
+        @Override public boolean deleteAll() { throw new UnsupportedOperationException(); }
     }
 }

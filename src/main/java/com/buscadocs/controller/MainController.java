@@ -5,6 +5,7 @@ import com.buscadocs.service.LogMonitoringService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,20 +15,29 @@ import java.io.IOException;
 /**
  * Controlador de la ventana principal de BuscaDocs.
  * <p>
- * Gestiona la navegación entre las diferentes vistas (búsqueda, dashboard, configuración)
- * mediante un {@link BorderPane} que actúa como contenedor. Inicia y detiene el servicio
- * de monitoreo de logs al abrir/cerrar la aplicación.
+ * Gestiona la navegación entre las diferentes vistas (búsqueda, dashboard,
+ * configuración, historial) mediante una barra lateral fija y un
+ * {@link BorderPane} cuyo centro se reemplaza dinámicamente. Inicia y
+ * detiene el servicio de monitoreo de logs al abrir/cerrar la aplicación.
  * </p>
  *
  * @author VJuan955
- * @version 1.0
+ * @version 1.1
  */
 public class MainController {
 
     private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
+    /** Clase CSS aplicada al botón de navegación de la vista actualmente visible. */
+    private static final String ACTIVE_NAV_CLASS = "active";
+
     @FXML
     private BorderPane mainContainer;
+
+    @FXML private Button navSearchBtn;
+    @FXML private Button navSettingsBtn;
+    @FXML private Button navHistoryBtn;
+    @FXML private Button navDashboardBtn;
 
     private final LogMonitoringService logService = AppContext.getInstance().getLogMonitoringService();
 
@@ -46,7 +56,7 @@ public class MainController {
     public void initialize() {
         logger.info("Iniciando MainController");
         logService.start();
-        loadView("search.fxml");
+        showSearchView();
     }
 
     /**
@@ -56,6 +66,7 @@ public class MainController {
     @FXML
     public void showSearchView() {
         loadView("search.fxml");
+        setActiveNav(navSearchBtn);
     }
 
     /**
@@ -64,6 +75,7 @@ public class MainController {
     @FXML
     public void showDashboardView() {
         loadView("dashboard.fxml");
+        setActiveNav(navDashboardBtn);
     }
 
     /**
@@ -72,6 +84,7 @@ public class MainController {
     @FXML
     public void showSettingsView() {
         loadView("settings.fxml");
+        setActiveNav(navSettingsBtn);
     }
 
     /**
@@ -80,6 +93,25 @@ public class MainController {
     @FXML
     public void showHistoryView() {
         loadView("history.fxml");
+        setActiveNav(navHistoryBtn);
+    }
+
+    /**
+     * Resalta visualmente, en la barra lateral, el botón correspondiente a la
+     * vista actualmente visible, y quita ese resaltado de los demás.
+     *
+     * @param active botón de navegación de la vista que se acaba de mostrar.
+     */
+    private void setActiveNav(Button active) {
+        for (Button navButton : new Button[]{navSearchBtn, navSettingsBtn, navHistoryBtn, navDashboardBtn}) {
+            if (navButton == null) {
+                continue;
+            }
+            navButton.getStyleClass().remove(ACTIVE_NAV_CLASS);
+        }
+        if (active != null && !active.getStyleClass().contains(ACTIVE_NAV_CLASS)) {
+            active.getStyleClass().add(ACTIVE_NAV_CLASS);
+        }
     }
 
     /**

@@ -24,8 +24,6 @@ import static org.mockito.Mockito.when;
  */
 class MetricServiceImplTest {
 
-    // --- Pruebas de humo contra el bean real del sistema ---
-
     private final MetricService realMetricService = new MetricServiceImpl();
 
     @Test
@@ -46,8 +44,6 @@ class MetricServiceImplTest {
         assertTrue(usado >= 0, "La memoria usada no debe ser negativa");
         assertTrue(usado <= total, "La memoria usada no debería superar el total del sistema");
     }
-
-    // --- Pruebas dirigidas con OperatingSystemMXBean simulado ---
 
     @Test
     void getCpuLoadDevuelveCeroSiNuncaHuboUnaLecturaValida() {

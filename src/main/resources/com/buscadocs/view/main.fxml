@@ -2,19 +2,94 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.Group?>
 
 <BorderPane fx:id="mainContainer" xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.buscadocs.controller.MainController"
             stylesheets="/com/buscadocs/css/styles.css">
-    <top>
-        <ToolBar>
-            <Button text="Buscar" onAction="#showSearchView" />
-            <Button text="Dashboard" onAction="#showDashboardView" />
-            <Button text="Carpetas" onAction="#showSettingsView" />
-            <Button text="Historial" onAction="#showHistoryView" />
-            <Pane HBox.hgrow="ALWAYS" />
-            <Button text="Salir" onAction="#shutdown" />
-        </ToolBar>
-    </top>
+    <left>
+        <VBox styleClass="sidebar" prefWidth="230" minWidth="230" maxWidth="230">
+
+            <VBox styleClass="sidebar-brand">
+                <padding>
+                    <Insets top="22" right="18" bottom="20" left="18" />
+                </padding>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <StackPane styleClass="brand-mark">
+                        <Group>
+                            <Circle radius="5.5" centerX="7" centerY="7" styleClass="brand-icon-line" />
+                            <Line startX="10.7" startY="10.7" endX="14" endY="14" styleClass="brand-icon-line" />
+                        </Group>
+                    </StackPane>
+                    <VBox spacing="0">
+                        <Label text="BuscaDocs" styleClass="brand-title" />
+                        <Label text="Buscador local" styleClass="brand-subtitle" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <VBox styleClass="nav-list" spacing="4" VBox.vgrow="ALWAYS">
+                <padding>
+                    <Insets top="14" right="12" bottom="12" left="12" />
+                </padding>
+
+                <Button fx:id="navSearchBtn" text="Motor de Búsqueda" styleClass="nav-item"
+                        onAction="#showSearchView" maxWidth="Infinity" contentDisplay="LEFT" graphicTextGap="10">
+                    <graphic>
+                        <Group>
+                            <Circle radius="5" centerX="6" centerY="6" styleClass="nav-icon-stroke" />
+                            <Line startX="9.6" startY="9.6" endX="13" endY="13" styleClass="nav-icon-stroke" />
+                        </Group>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="navSettingsBtn" text="Configuración" styleClass="nav-item"
+                        onAction="#showSettingsView" maxWidth="Infinity" contentDisplay="LEFT" graphicTextGap="10">
+                    <graphic>
+                        <Group>
+                            <Rectangle x="1" y="4" width="14" height="9" arcWidth="3" arcHeight="3" styleClass="nav-icon-stroke" />
+                            <Rectangle x="1" y="2" width="6" height="3" arcWidth="2" arcHeight="2" styleClass="nav-icon-fill" />
+                        </Group>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="navHistoryBtn" text="Historial" styleClass="nav-item"
+                        onAction="#showHistoryView" maxWidth="Infinity" contentDisplay="LEFT" graphicTextGap="10">
+                    <graphic>
+                        <Group>
+                            <Circle radius="6.5" centerX="7" centerY="7" styleClass="nav-icon-stroke" />
+                            <Line startX="7" startY="7" endX="7" endY="3" styleClass="nav-icon-stroke" />
+                            <Line startX="7" startY="7" endX="10.2" endY="8.6" styleClass="nav-icon-stroke" />
+                        </Group>
+                    </graphic>
+                </Button>
+
+                <Button fx:id="navDashboardBtn" text="Monitoreo" styleClass="nav-item"
+                        onAction="#showDashboardView" maxWidth="Infinity" contentDisplay="LEFT" graphicTextGap="10">
+                    <graphic>
+                        <Group>
+                            <Rectangle x="1" y="9" width="3" height="5" arcWidth="1" arcHeight="1" styleClass="nav-icon-fill" />
+                            <Rectangle x="6" y="5" width="3" height="9" arcWidth="1" arcHeight="1" styleClass="nav-icon-fill" />
+                            <Rectangle x="11" y="1" width="3" height="13" arcWidth="1" arcHeight="1" styleClass="nav-icon-fill" />
+                        </Group>
+                    </graphic>
+                </Button>
+            </VBox>
+
+            <VBox styleClass="sidebar-status" spacing="6">
+                <padding>
+                    <Insets top="14" right="18" bottom="18" left="18" />
+                </padding>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Circle radius="4" styleClass="status-dot-active" />
+                    <Label text="Sistema activo" styleClass="sidebar-status-title" />
+                </HBox>
+                <Label text="Listo para buscar" styleClass="sidebar-status-subtitle" />
+                <Button text="Salir" styleClass="nav-exit" onAction="#shutdown" maxWidth="Infinity" />
+            </VBox>
+        </VBox>
+    </left>
 </BorderPane>
