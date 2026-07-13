@@ -4,22 +4,53 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 
-<VBox spacing="10" xmlns="http://javafx.com/javafx/21"
+<VBox spacing="0" xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.buscadocs.controller.SettingsController">
     <padding>
-        <Insets top="16" right="16" bottom="16" left="16" />
+        <Insets top="28" right="40" bottom="20" left="40" />
     </padding>
-    <HBox spacing="10">
-        <TextField fx:id="folderPathField" promptText="Ruta de carpeta" HBox.hgrow="ALWAYS" editable="false" />
-        <Button text="Examinar..." onAction="#browseFolder" />
-        <CheckBox fx:id="includeHiddenCheck" text="Incluir ocultos" />
-        <Button text="Agregar" onAction="#addFolder" defaultButton="true" />
+
+    <VBox spacing="4">
+        <Label text="Configuración de Índice" styleClass="page-title" />
+        <Label text="Administra las carpetas que BuscaDocs mantiene indexadas" styleClass="page-subtitle" />
+    </VBox>
+
+    <VBox styleClass="settings-form-card" spacing="12">
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20" />
+        </padding>
+        <HBox spacing="10">
+            <TextField fx:id="folderPathField" promptText="Ruta de carpeta" HBox.hgrow="ALWAYS" editable="false" />
+            <Button text="Examinar..." onAction="#browseFolder" styleClass="filter-toggle-btn" />
+        </HBox>
+        <HBox spacing="16" alignment="CENTER_LEFT">
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Extensiones a indexar (opcional)" styleClass="filter-label" />
+                <TextField fx:id="extensionFilterField" promptText="pdf, docx, xlsx... (vacío = todas)" />
+            </VBox>
+            <CheckBox fx:id="includeHiddenCheck" text="Incluir ocultos" />
+        </HBox>
+        <HBox alignment="CENTER_RIGHT">
+            <Button text="Agregar carpeta" onAction="#addFolder" defaultButton="true" styleClass="search-submit-btn" />
+        </HBox>
+    </VBox>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <padding>
+            <Insets top="20" bottom="10" />
+        </padding>
+        <Label text="Carpetas indexadas" styleClass="section-title" />
+        <Pane HBox.hgrow="ALWAYS" />
+        <Button text="Reindexar seleccionada" onAction="#reindexFolder" styleClass="filter-toggle-btn" />
+        <Button text="Eliminar seleccionada" onAction="#removeFolder" styleClass="filter-toggle-btn" />
     </HBox>
+
     <ListView fx:id="foldersList" VBox.vgrow="ALWAYS" />
-    <HBox spacing="10">
-        <Button text="Reindexar" onAction="#reindexFolder" />
-        <Button text="Eliminar" onAction="#removeFolder" />
-    </HBox>
-    <Label fx:id="messageLabel" styleClass="status-label" />
+
+    <Label fx:id="messageLabel" styleClass="status-label">
+        <VBox.margin>
+            <Insets top="8" />
+        </VBox.margin>
+    </Label>
 </VBox>

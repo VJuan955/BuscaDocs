@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS folders (
     status TEXT NOT NULL DEFAULT 'PENDING',
     last_indexed TEXT,
     include_hidden INTEGER NOT NULL DEFAULT 0,
+    extension_filter TEXT,
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S','now')),
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S','now'))
 )

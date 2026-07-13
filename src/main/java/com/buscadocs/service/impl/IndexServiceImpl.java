@@ -6,6 +6,7 @@ import com.buscadocs.model.Folder;
 import com.buscadocs.model.IndexedFile;
 import com.buscadocs.service.IndexService;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
 import com.google.common.base.Stopwatch;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.extractor.ExcelExtractor;
@@ -33,6 +34,9 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -61,19 +65,32 @@ public class IndexServiceImpl implements IndexService {
         this.indexedFileDao = indexedFileDao;
     }
 
+    /** Divide el filtro de extensiones ingresado por el usuario en tokens individuales. */
+    private static final Splitter EXTENSION_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
+
     /**
      * {@inheritDoc}
      */
     @Override
     public Folder addFolder(String path, boolean includeHidden) {
+        return addFolder(path, includeHidden, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Folder addFolder(String path, boolean includeHidden, String extensionFilter) {
         Preconditions.checkArgument(path != null && !path.isBlank(),
                 "La ruta de la carpeta no puede estar vacía");
         Folder folder = new Folder();
         folder.setPath(path);
         folder.setStatus("PENDING");
         folder.setIncludeHidden(includeHidden);
+        folder.setExtensionFilter(normalizeExtensionFilter(extensionFilter));
         Folder saved = folderDao.insert(folder);
-        logger.info("Carpeta agregada: {} (id={})", path, saved.getId());
+        logger.info("Carpeta agregada: {} (id={}, filtro de extensiones={})",
+                path, saved.getId(), saved.getExtensionFilter());
         new Thread(() -> performIndexing(saved)).start();
         return saved;
     }
@@ -104,6 +121,42 @@ public class IndexServiceImpl implements IndexService {
     }
 
     /**
+     * Normaliza el texto de filtro de extensiones ingresado por el usuario a
+     * una forma canónica: minúsculas, sin puntos, sin duplicados y en orden
+     * alfabético (ej. ".PDF, docx, PDF" → "docx,pdf"). Se guarda así en la
+     * base de datos para que la interfaz siempre muestre un valor consistente.
+     *
+     * @param raw texto ingresado por el usuario, puede ser {@code null}.
+     * @return cadena normalizada, o {@code null} si no queda ninguna extensión válida.
+     */
+    private String normalizeExtensionFilter(String raw) {
+        Set<String> extensions = parseExtensionFilter(raw);
+        return extensions.isEmpty() ? null : String.join(",", extensions);
+    }
+
+    /**
+     * Convierte el filtro de extensiones almacenado (texto separado por comas)
+     * en un conjunto de extensiones en minúsculas y sin punto, listo para
+     * comparar contra la extensión de cada archivo durante el recorrido.
+     *
+     * @param raw texto de filtro, puede ser {@code null} o vacío.
+     * @return conjunto de extensiones permitidas; vacío significa "sin restricción" (todas).
+     */
+    private Set<String> parseExtensionFilter(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return Collections.emptySet();
+        }
+        Set<String> result = new TreeSet<>();
+        for (String token : EXTENSION_SPLITTER.split(raw)) {
+            String normalized = token.startsWith(".") ? token.substring(1) : token;
+            if (!normalized.isBlank()) {
+                result.add(normalized.toLowerCase());
+            }
+        }
+        return result;
+    }
+
+    /**
      * Ejecuta el proceso completo de indexación de una carpeta.
      *
      * El método recorre recursivamente el directorio indicado, procesa cada
@@ -126,11 +179,22 @@ public class IndexServiceImpl implements IndexService {
                 return;
             }
 
+            Set<String> allowedExtensions = parseExtensionFilter(folder.getExtensionFilter());
+            if (!allowedExtensions.isEmpty()) {
+                logger.info("Filtro de extensiones activo para carpeta id={}: {}", folder.getId(), allowedExtensions);
+            }
+
             Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
                     if (!folder.isIncludeHidden() && file.getFileName().toString().startsWith(".")) {
                         return FileVisitResult.CONTINUE;
+                    }
+                    if (!allowedExtensions.isEmpty()) {
+                        String ext = FilenameUtils.getExtension(file.getFileName().toString()).toLowerCase();
+                        if (!allowedExtensions.contains(ext)) {
+                            return FileVisitResult.CONTINUE;
+                        }
                     }
                     processFile(file, folder.getId(), attrs);
                     filesIndexed.incrementAndGet();

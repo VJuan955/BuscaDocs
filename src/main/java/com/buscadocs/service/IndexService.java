@@ -21,6 +21,19 @@ public interface IndexService {
     Folder addFolder(String path, boolean includeHidden);
 
     /**
+     * Agrega una nueva carpeta al sistema, restringiendo la indexación a un
+     * conjunto específico de extensiones, y dispara su indexación.
+     *
+     * @param path Ruta absoluta de la carpeta.
+     * @param includeHidden Si se deben incluir archivos ocultos.
+     * @param extensionFilter Extensiones separadas por coma (sin punto, ej. "pdf,docx")
+     *                        que delimitan qué archivos se indexan, o {@code null}/vacío
+     *                        para indexar todos los archivos sin restricción.
+     * @return La carpeta creada con su estado actual.
+     */
+    Folder addFolder(String path, boolean includeHidden, String extensionFilter);
+
+    /**
      * Reindexa una carpeta existente (borra sus archivos previos y vuelve a escanear).
      *
      * @param folderId ID de la carpeta.

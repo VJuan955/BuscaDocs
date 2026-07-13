@@ -29,8 +29,8 @@ public class SQLiteFolderDao implements FolderDao {
     private static final Logger logger = LoggerFactory.getLogger(SQLiteFolderDao.class);
     private static final DateTimeFormatter DT_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    private static final String INSERT_SQL = "INSERT INTO folders (path, status, last_indexed, include_hidden) VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_SQL = "UPDATE folders SET path=?, status=?, last_indexed=?, include_hidden=?, updated_at=strftime('%Y-%m-%dT%H:%M:%S','now') WHERE id=?";
+    private static final String INSERT_SQL = "INSERT INTO folders (path, status, last_indexed, include_hidden, extension_filter) VALUES (?, ?, ?, ?, ?)";
+    private static final String UPDATE_SQL = "UPDATE folders SET path=?, status=?, last_indexed=?, include_hidden=?, extension_filter=?, updated_at=strftime('%Y-%m-%dT%H:%M:%S','now') WHERE id=?";
     private static final String DELETE_SQL = "DELETE FROM folders WHERE id=?";
     private static final String SELECT_BY_ID = "SELECT * FROM folders WHERE id=?";
     private static final String SELECT_BY_PATH = "SELECT * FROM folders WHERE path=?";
@@ -49,6 +49,7 @@ public class SQLiteFolderDao implements FolderDao {
             pstmt.setString(2, folder.getStatus());
             pstmt.setString(3, folder.getLastIndexed() != null ? folder.getLastIndexed().format(DT_FORMATTER) : null);
             pstmt.setInt(4, folder.isIncludeHidden() ? 1 : 0);
+            pstmt.setString(5, folder.getExtensionFilter());
 
             int affected = pstmt.executeUpdate();
             if (affected == 1) {
@@ -82,7 +83,8 @@ public class SQLiteFolderDao implements FolderDao {
             pstmt.setString(2, folder.getStatus());
             pstmt.setString(3, folder.getLastIndexed() != null ? folder.getLastIndexed().format(DT_FORMATTER) : null);
             pstmt.setInt(4, folder.isIncludeHidden() ? 1 : 0);
-            pstmt.setInt(5, folder.getId());
+            pstmt.setString(5, folder.getExtensionFilter());
+            pstmt.setInt(6, folder.getId());
 
             int affected = pstmt.executeUpdate();
             if (affected == 1) {
@@ -212,6 +214,7 @@ public class SQLiteFolderDao implements FolderDao {
         String lastIndexed = rs.getString("last_indexed");
         f.setLastIndexed(lastIndexed != null ? LocalDateTime.parse(lastIndexed, DT_FORMATTER) : null);
         f.setIncludeHidden(rs.getInt("include_hidden") == 1);
+        f.setExtensionFilter(rs.getString("extension_filter"));
         String createdAt = rs.getString("created_at");
         f.setCreatedAt(createdAt != null ? LocalDateTime.parse(createdAt, DT_FORMATTER) : null);
         String updatedAt = rs.getString("updated_at");

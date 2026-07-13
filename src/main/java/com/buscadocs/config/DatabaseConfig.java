@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.nio.file.Files;
@@ -97,9 +98,56 @@ public class DatabaseConfig {
                 }
             }
             logger.info("Esquema de base de datos inicializado correctamente.");
+            runMigrations(connection);
         } catch (Exception e) {
             logger.error("Error al ejecutar el script de esquema de la base de datos", e);
             throw new RuntimeException("Falló la inicialización del esquema de BD", e);
         }
+    }
+
+    /**
+     * Aplica pequeñas migraciones incrementales sobre bases de datos creadas
+     * con una versión anterior del esquema.
+     * <p>
+     * {@code schema.sql} usa {@code CREATE TABLE IF NOT EXISTS}, por lo que
+     * NO modifica una tabla que ya existe: si una instalación previa ya tiene
+     * la tabla {@code folders} sin la columna {@code extension_filter}
+     * (agregada en una versión posterior), esa columna nunca se crearía sin
+     * este paso adicional, y la aplicación fallaría al intentar leerla o
+     * escribirla. Cada migración se aplica solo si hace falta, por lo que es
+     * seguro ejecutar este método en cada arranque.
+     * </p>
+     *
+     * @param connection conexión activa a la base de datos.
+     * @throws SQLException si ocurre un error al consultar o alterar el esquema.
+     */
+    private void runMigrations(Connection connection) throws SQLException {
+        if (!columnExists(connection, "folders", "extension_filter")) {
+            logger.info("Migrando esquema: agregando columna folders.extension_filter");
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("ALTER TABLE folders ADD COLUMN extension_filter TEXT");
+            }
+        }
+    }
+
+    /**
+     * Verifica si una columna existe en una tabla, usando {@code PRAGMA table_info}.
+     *
+     * @param connection conexión activa a la base de datos.
+     * @param table nombre de la tabla a inspeccionar.
+     * @param column nombre de la columna buscada.
+     * @return {@code true} si la columna ya existe.
+     * @throws SQLException si ocurre un error al consultar el esquema.
+     */
+    private boolean columnExists(Connection connection, String table, String column) throws SQLException {
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery("PRAGMA table_info(" + table + ")")) {
+            while (rs.next()) {
+                if (column.equalsIgnoreCase(rs.getString("name"))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

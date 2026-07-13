@@ -118,6 +118,16 @@
     -fx-border-color: transparent;
 }
 
+/*
+ * ProgressBar: se usa únicamente -fx-accent, la propiedad oficialmente
+ * soportada por el skin de Modena para recolorear el relleno sin tocar su
+ * lógica interna de dibujado. Versiones anteriores de este archivo
+ * sobrescribían -fx-background-radius/-fx-padding directamente sobre
+ * ".progress-bar" y ".progress-bar .bar": esa combinación es una causa
+ * conocida de que el relleno dibujado deje de seguir visualmente el valor
+ * de progress() tras el primer layout, aunque el valor numérico sí cambie
+ * (justo el síntoma reportado: "la barra no se actualiza").
+ */
 .progress-bar {
     -fx-accent: #3b6df0;
 }
@@ -205,6 +215,10 @@
     -fx-padding: 6 10;
 }
 
+/* ============================================================
+ * Barra lateral (sidebar)
+ * ============================================================ */
+
 .sidebar {
     -fx-background-color: #161a2e;
 }
@@ -242,6 +256,9 @@
     -fx-font-size: 11px;
 }
 
+/* Botones de navegación: se sobrescribe por completo el estilo de .button
+   (fondo transparente, sin borde, alineados a la izquierda). Los íconos
+   se recolorean junto con el texto según el estado (normal/hover/activo). */
 .nav-item {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -327,6 +344,10 @@
     -fx-border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* ============================================================
+ * Vista de búsqueda: encabezado, barra centrada y popup de filtros
+ * ============================================================ */
+
 .page-title {
     -fx-font-size: 24px;
     -fx-font-weight: bold;
@@ -354,6 +375,8 @@
     -fx-stroke-line-cap: round;
 }
 
+/* La barra ya aporta el borde/sombra: el campo interno queda sin su propio
+   borde para verse como una sola pieza continua con el ícono y el botón. */
 .search-input {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -443,4 +466,24 @@
     -fx-font-size: 12px;
     -fx-text-fill: #3b6df0;
     -fx-font-weight: 500;
+}
+
+.settings-form-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #e0e4ea;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(30, 41, 59, 0.06), 12, 0, 0, 2);
+}
+
+.status-dot-ready {
+    -fx-fill: #22c55e;
+}
+
+.status-dot-indexing {
+    -fx-fill: #eab308;
+}
+
+.status-dot-error {
+    -fx-fill: #ef4444;
 }

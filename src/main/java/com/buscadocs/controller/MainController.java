@@ -49,6 +49,13 @@ public class MainController {
     private DashboardController activeDashboardController;
 
     /**
+     * Referencia al controlador de configuración actualmente cargado, si lo
+     * hay, para poder detener su temporizador de auto-refresco al navegar a
+     * otra vista, por el mismo motivo que con el dashboard.
+     */
+    private SettingsController activeSettingsController;
+
+    /**
      * Inicializa el controlador después de cargar el FXML.
      * Carga la vista de búsqueda por defecto y arranca el monitoreo de logs.
      */
@@ -124,12 +131,18 @@ public class MainController {
             activeDashboardController.stopUpdater();
             activeDashboardController = null;
         }
+        if (activeSettingsController != null) {
+            activeSettingsController.stopUpdater();
+            activeSettingsController = null;
+        }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/buscadocs/view/" + fxmlFile));
             Parent view = loader.load();
             mainContainer.setCenter(view);
             if (loader.getController() instanceof DashboardController dashboardController) {
                 activeDashboardController = dashboardController;
+            } else if (loader.getController() instanceof SettingsController settingsController) {
+                activeSettingsController = settingsController;
             }
             logger.debug("Vista cargada: {}", fxmlFile);
         } catch (IOException e) {
@@ -144,6 +157,9 @@ public class MainController {
     public void shutdown() {
         if (activeDashboardController != null) {
             activeDashboardController.stopUpdater();
+        }
+        if (activeSettingsController != null) {
+            activeSettingsController.stopUpdater();
         }
         logService.stop();
         logger.info("Aplicación cerrada");

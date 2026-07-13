@@ -15,6 +15,7 @@ public class Folder {
     private String status;
     private LocalDateTime lastIndexed;
     private boolean includeHidden;
+    private String extensionFilter;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -70,6 +71,19 @@ public class Folder {
 
     public void setIncludeHidden(boolean includeHidden) {
         this.includeHidden = includeHidden;
+    }
+
+    /**
+     * @return las extensiones (sin punto, separadas por coma, ej. "pdf,docx") que
+     *         delimitan qué archivos se indexan de esta carpeta, o {@code null}/vacío
+     *         si se indexan todos los archivos sin restricción.
+     */
+    public String getExtensionFilter() {
+        return extensionFilter;
+    }
+
+    public void setExtensionFilter(String extensionFilter) {
+        this.extensionFilter = extensionFilter;
     }
 
     public LocalDateTime getCreatedAt() {
