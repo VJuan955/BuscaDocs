@@ -92,6 +92,30 @@ class IndexServiceImplTest extends AbstractDatabaseTest {
     }
 
     /**
+     * Regresión: Apache POI lanza {@code EmptyFileException} (un
+     * {@link RuntimeException}, no un {@link IOException}) al intentar abrir
+     * un .docx/.xlsx/.pptx de 0 bytes. Antes de la corrección, esta excepción
+     * no era capturada y mataba por completo el hilo de indexación en segundo
+     * plano, dejando la carpeta atascada en estado "INDEXING" para siempre y
+     * sin indexar ningún archivo más. Ahora el archivo vacío se omite y el
+     * resto de la carpeta se indexa con normalidad.
+     */
+    @Test
+    void archivoOfficeVacioNoInterrumpeLaIndexacionDelResto(@TempDir Path tempDir) throws IOException {
+        Files.createFile(tempDir.resolve("vacio.docx")); // 0 bytes, provoca EmptyFileException en POI
+        Files.writeString(tempDir.resolve("normal.txt"), "contenido de prueba");
+
+        Folder folder = indexService.addFolder(tempDir.toString(), false, null);
+        Folder finalState = waitUntilFinished(folder.getId());
+
+        assertEquals("READY", finalState.getStatus(),
+                "La carpeta no debe quedar atascada en INDEXING por un archivo Office vacío");
+        List<IndexedFile> indexed = indexedFileDao.findByFolder(folder.getId());
+        assertEquals(1, indexed.size(), "El .docx vacío se omite, pero el .txt normal sí debe indexarse");
+        assertEquals("normal.txt", indexed.get(0).getFileName());
+    }
+
+    /**
      * Espera, sondeando periódicamente, a que la indexación en segundo plano
      * termine (estado {@code READY} o {@code ERROR}), ya que {@code addFolder}
      * dispara el proceso en un hilo aparte y no bloquea la llamada.

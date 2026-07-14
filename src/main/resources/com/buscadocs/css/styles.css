@@ -118,16 +118,6 @@
     -fx-border-color: transparent;
 }
 
-/*
- * ProgressBar: se usa únicamente -fx-accent, la propiedad oficialmente
- * soportada por el skin de Modena para recolorear el relleno sin tocar su
- * lógica interna de dibujado. Versiones anteriores de este archivo
- * sobrescribían -fx-background-radius/-fx-padding directamente sobre
- * ".progress-bar" y ".progress-bar .bar": esa combinación es una causa
- * conocida de que el relleno dibujado deje de seguir visualmente el valor
- * de progress() tras el primer layout, aunque el valor numérico sí cambie
- * (justo el síntoma reportado: "la barra no se actualiza").
- */
 .progress-bar {
     -fx-accent: #3b6df0;
 }
@@ -215,10 +205,6 @@
     -fx-padding: 6 10;
 }
 
-/* ============================================================
- * Barra lateral (sidebar)
- * ============================================================ */
-
 .sidebar {
     -fx-background-color: #161a2e;
 }
@@ -256,9 +242,6 @@
     -fx-font-size: 11px;
 }
 
-/* Botones de navegación: se sobrescribe por completo el estilo de .button
-   (fondo transparente, sin borde, alineados a la izquierda). Los íconos
-   se recolorean junto con el texto según el estado (normal/hover/activo). */
 .nav-item {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -344,10 +327,6 @@
     -fx-border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* ============================================================
- * Vista de búsqueda: encabezado, barra centrada y popup de filtros
- * ============================================================ */
-
 .page-title {
     -fx-font-size: 24px;
     -fx-font-weight: bold;
@@ -375,8 +354,6 @@
     -fx-stroke-line-cap: round;
 }
 
-/* La barra ya aporta el borde/sombra: el campo interno queda sin su propio
-   borde para verse como una sola pieza continua con el ícono y el botón. */
 .search-input {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
@@ -486,4 +463,103 @@
 
 .status-dot-error {
     -fx-fill: #ef4444;
+}
+
+.metric-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #e0e4ea;
+    -fx-border-radius: 12;
+    -fx-padding: 18;
+    -fx-effect: dropshadow(gaussian, rgba(30, 41, 59, 0.06), 12, 0, 0, 2);
+}
+
+.metric-card-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-text-fill: #6b7280;
+}
+
+.metric-card-value {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1e293b;
+}
+
+.metric-progress-bar {
+    -fx-pref-height: 10;
+}
+
+.metric-bar-ok.progress-bar {
+    -fx-accent: #22c55e;
+}
+
+.metric-bar-warning.progress-bar {
+    -fx-accent: #eab308;
+}
+
+.metric-bar-critical.progress-bar {
+    -fx-accent: #ef4444;
+}
+
+.terminal-card {
+    -fx-background-color: #0d1117;
+    -fx-background-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(30, 41, 59, 0.18), 18, 0, 0, 6);
+}
+
+.terminal-header {
+    -fx-background-color: #161b22;
+    -fx-background-radius: 12 12 0 0;
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.08) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.terminal-dot-red {
+    -fx-fill: #ff5f56;
+}
+
+.terminal-dot-yellow {
+    -fx-fill: #ffbd2e;
+}
+
+.terminal-dot-green {
+    -fx-fill: #27c93f;
+}
+
+.terminal-title {
+    -fx-text-fill: #8b949e;
+    -fx-font-size: 12px;
+    -fx-font-family: "Consolas", "Monaco", monospace;
+}
+
+.terminal-list {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0 0 12 12;
+    -fx-background-insets: 0;
+    -fx-padding: 6 0;
+}
+
+.terminal-list .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e6edf3;
+    -fx-font-family: "Consolas", "Monaco", monospace;
+    -fx-font-size: 12px;
+    -fx-padding: 3 14;
+}
+
+.terminal-list .list-cell:filled:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.06);
+    -fx-cursor: default;
+}
+
+.terminal-list .list-cell:filled:selected {
+    -fx-background-color: rgba(88, 166, 255, 0.15);
+    -fx-text-fill: #ffffff;
+    -fx-border-color: transparent;
+}
+
+.terminal-list .scroll-bar:vertical {
+    -fx-background-color: transparent;
 }

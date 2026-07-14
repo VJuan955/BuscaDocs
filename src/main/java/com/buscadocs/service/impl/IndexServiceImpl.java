@@ -91,7 +91,7 @@ public class IndexServiceImpl implements IndexService {
         Folder saved = folderDao.insert(folder);
         logger.info("Carpeta agregada: {} (id={}, filtro de extensiones={})",
                 path, saved.getId(), saved.getExtensionFilter());
-        new Thread(() -> performIndexing(saved)).start();
+        startIndexingThread(saved);
         return saved;
     }
 
@@ -106,7 +106,7 @@ public class IndexServiceImpl implements IndexService {
         folderDao.update(folder);
         indexedFileDao.deleteByFolder(folderId);
         logger.info("Reindexando carpeta id={}", folderId);
-        new Thread(() -> performIndexing(folder)).start();
+        startIndexingThread(folder);
         return folder;
     }
 
@@ -118,6 +118,35 @@ public class IndexServiceImpl implements IndexService {
         indexedFileDao.deleteByFolder(folderId);
         folderDao.delete(folderId);
         logger.info("Carpeta id={} eliminada", folderId);
+    }
+
+    /**
+     * Lanza la indexación de una carpeta en un hilo en segundo plano.
+     * <p>
+     * Se instala un {@link Thread.UncaughtExceptionHandler} como última capa
+     * de defensa: aunque {@link #performIndexing} y {@link #processFile} ya
+     * capturan {@code Exception} internamente para no matar el hilo, este
+     * manejador registra en el log (en vez de solo imprimir en la consola
+     * del sistema, como ocurría antes) cualquier error verdaderamente
+     * inesperado que igualmente lograra escapar, y deja la carpeta en estado
+     * {@code ERROR} para que no quede atascada indefinidamente en "INDEXING".
+     * </p>
+     *
+     * @param folder carpeta a indexar.
+     */
+    private void startIndexingThread(Folder folder) {
+        Thread thread = new Thread(() -> performIndexing(folder), "indexing-folder-" + folder.getId());
+        thread.setUncaughtExceptionHandler((t, e) -> {
+            logger.error("Error no controlado durante la indexación de carpeta id={}", folder.getId(), e);
+            try {
+                folder.setStatus("ERROR");
+                folderDao.update(folder);
+            } catch (Exception updateError) {
+                logger.error("Además, no se pudo actualizar el estado de la carpeta id={} a ERROR",
+                        folder.getId(), updateError);
+            }
+        });
+        thread.start();
     }
 
     /**
@@ -222,7 +251,7 @@ public class IndexServiceImpl implements IndexService {
             stopwatch.stop();
             logger.info("Indexación completada para carpeta id={}: {} archivos en {} ms",
                     folder.getId(), filesIndexed.get(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Error durante la indexación de carpeta id={}", folder.getId(), e);
             folder.setStatus("ERROR");
             folderDao.update(folder);
@@ -286,7 +315,7 @@ public class IndexServiceImpl implements IndexService {
 
             indexedFileDao.insert(indexed);
             logger.debug("Archivo indexado: {}", fileName);
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.warn("Error al leer contenido de: {}", filePath, e);
         }
     }

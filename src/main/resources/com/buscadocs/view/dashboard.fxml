@@ -3,21 +3,48 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.shape.Circle?>
 
-<VBox spacing="10" xmlns="http://javafx.com/javafx/21"
+<VBox spacing="0" xmlns="http://javafx.com/javafx/21"
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.buscadocs.controller.DashboardController">
     <padding>
-        <Insets top="16" right="16" bottom="16" left="16" />
+        <Insets top="28" right="40" bottom="24" left="40" />
     </padding>
-    <Label text="Uso de CPU" />
-    <ProgressBar fx:id="cpuBar" prefWidth="300" />
-    <Label fx:id="cpuLabel" text="CPU: --%" />
 
-    <Label text="Uso de RAM" />
-    <ProgressBar fx:id="ramBar" prefWidth="300" />
-    <Label fx:id="ramLabel" text="RAM: -- MB" />
+    <VBox spacing="4">
+        <Label text="Monitoreo del Sistema" styleClass="page-title" />
+        <Label text="Uso de recursos en tiempo real y actividad reciente" styleClass="page-subtitle" />
+    </VBox>
 
-    <Label text="Consola de Logs (en tiempo real)" />
-    <ListView fx:id="logConsole" VBox.vgrow="ALWAYS" />
+    <HBox spacing="20">
+        <padding>
+            <Insets top="20" bottom="20" />
+        </padding>
+        <VBox styleClass="metric-card" spacing="10" HBox.hgrow="ALWAYS">
+            <Label text="Uso de CPU" styleClass="metric-card-title" />
+            <ProgressBar fx:id="cpuBar" styleClass="metric-progress-bar" maxWidth="Infinity" />
+            <Label fx:id="cpuLabel" text="CPU: --%" styleClass="metric-card-value" />
+        </VBox>
+        <VBox styleClass="metric-card" spacing="10" HBox.hgrow="ALWAYS">
+            <Label text="Uso de RAM" styleClass="metric-card-title" />
+            <ProgressBar fx:id="ramBar" styleClass="metric-progress-bar" maxWidth="Infinity" />
+            <Label fx:id="ramLabel" text="RAM: -- MB" styleClass="metric-card-value" />
+        </VBox>
+    </HBox>
+
+    <VBox styleClass="terminal-card" VBox.vgrow="ALWAYS">
+        <HBox styleClass="terminal-header" spacing="8" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10" right="14" bottom="10" left="14" />
+            </padding>
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <Circle radius="5" styleClass="terminal-dot-red" />
+                <Circle radius="5" styleClass="terminal-dot-yellow" />
+                <Circle radius="5" styleClass="terminal-dot-green" />
+            </HBox>
+            <Label text="Consola de logs — tiempo real" styleClass="terminal-title" />
+        </HBox>
+        <ListView fx:id="logConsole" styleClass="terminal-list" VBox.vgrow="ALWAYS" />
+    </VBox>
 </VBox>
